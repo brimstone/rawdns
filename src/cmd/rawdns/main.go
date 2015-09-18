@@ -39,14 +39,20 @@ var config Config
 func main() {
 	log.Printf("rawdns v%s (%s on %s/%s; %s)\n", VERSION, runtime.Version(), runtime.GOOS, runtime.GOARCH, runtime.Compiler)
 
-	configFile := "example-config.json"
-	if len(os.Args) > 1 {
+	var err error
+	var configData []byte
+	configFile := "environment"
+	if len(os.Args) == 0 {
+
 		configFile = os.Args[1]
+		configData, err = ioutil.ReadFile(configFile)
+		if err != nil {
+			log.Fatalf("error: unable to read config file %s: %v\n", configFile, err)
+		}
+	} else {
+		configData = []byte(os.Getenv("CONFIG"))
 	}
-	configData, err := ioutil.ReadFile(configFile)
-	if err != nil {
-		log.Fatalf("error: unable to read config file %s: %v\n", configFile, err)
-	}
+
 	err = json.Unmarshal(configData, &config)
 	if err != nil {
 		log.Fatalf("error: unable to process config file data from %s: %v\n", configFile, err)
